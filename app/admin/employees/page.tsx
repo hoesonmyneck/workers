@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,23 @@ export default function EmployeesPage() {
   const [editForm, setEditForm] = useState<Record<string, any>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState<Record<string, any>>({});
+  
+  // Refs для синхронизации скроллов
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+
+  // Синхронизация скроллов
+  const handleTopScroll = () => {
+    if (topScrollRef.current && tableScrollRef.current) {
+      tableScrollRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTableScroll = () => {
+    if (topScrollRef.current && tableScrollRef.current) {
+      topScrollRef.current.scrollLeft = tableScrollRef.current.scrollLeft;
+    }
+  };
 
   const loadEmployees = () => {
     setLoading(true);
@@ -65,6 +82,29 @@ export default function EmployeesPage() {
     const timeoutId = setTimeout(loadEmployees, 300);
     return () => clearTimeout(timeoutId);
   }, [search]);
+
+  // Обновление ширины верхнего скроллбара
+  useEffect(() => {
+    const updateScrollWidth = () => {
+      if (topScrollRef.current && tableScrollRef.current) {
+        const scrollContent = topScrollRef.current.firstChild as HTMLElement;
+        if (scrollContent) {
+          scrollContent.style.width = `${tableScrollRef.current.scrollWidth}px`;
+        }
+      }
+    };
+
+    updateScrollWidth();
+    window.addEventListener('resize', updateScrollWidth);
+    
+    // Обновляем при изменении данных
+    const timeoutId = setTimeout(updateScrollWidth, 100);
+
+    return () => {
+      window.removeEventListener('resize', updateScrollWidth);
+      clearTimeout(timeoutId);
+    };
+  }, [employees, columns, editingId]);
 
   const handleEdit = (employee: Employee) => {
     setEditingId(employee.id);
@@ -211,35 +251,7 @@ export default function EmployeesPage() {
       {/* Таблица */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Сотрудники ({employees.length})</CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const container = document.getElementById('employees-table-container');
-                  if (container) {
-                    container.scrollLeft -= 200;
-                  }
-                }}
-              >
-                ← Влево
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const container = document.getElementById('employees-table-container');
-                  if (container) {
-                    container.scrollLeft += 200;
-                  }
-                }}
-              >
-                Вправо →
-              </Button>
-            </div>
-          </div>
+          <CardTitle>Сотрудники ({employees.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -247,7 +259,23 @@ export default function EmployeesPage() {
               <p className="text-gray-500">Загрузка...</p>
             </div>
           ) : (
-            <div id="employees-table-container" className="overflow-x-auto">
+            <>
+              {/* Верхний скроллбар */}
+              <div 
+                ref={topScrollRef}
+                onScroll={handleTopScroll}
+                className="overflow-x-auto overflow-y-hidden mb-2"
+                style={{ height: '12px' }}
+              >
+                <div style={{ width: tableScrollRef.current?.scrollWidth || '100%', height: '1px' }} />
+              </div>
+              
+              {/* Таблица с нижним скроллбаром */}
+              <div 
+                ref={tableScrollRef}
+                onScroll={handleTableScroll}
+                className="overflow-x-auto"
+              >
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -334,7 +362,8 @@ export default function EmployeesPage() {
                   ))}
                 </TableBody>
               </Table>
-            </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

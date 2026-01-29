@@ -323,35 +323,7 @@ export default function AccountsPage() {
       {/* Список администраторов */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between mb-2">
-            <CardTitle>Список администраторов</CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const container = document.getElementById('admins-table-container');
-                  if (container) {
-                    container.scrollLeft -= 200;
-                  }
-                }}
-              >
-                ← Влево
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const container = document.getElementById('admins-table-container');
-                  if (container) {
-                    container.scrollLeft += 200;
-                  }
-                }}
-              >
-                Вправо →
-              </Button>
-            </div>
-          </div>
+          <CardTitle>Список администраторов</CardTitle>
           <CardDescription>
             Аккаунты владельцев выделены цветом и защищены от удаления
           </CardDescription>
@@ -362,8 +334,7 @@ export default function AccountsPage() {
               <p className="text-gray-500">Загрузка...</p>
             </div>
           ) : (
-            <div id="admins-table-container" className="overflow-x-auto">
-              <Table>
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Логин</TableHead>
@@ -477,7 +448,6 @@ export default function AccountsPage() {
                 })}
               </TableBody>
             </Table>
-            </div>
           )}
 
           {!loading && (!admins || admins.length === 0) && (
