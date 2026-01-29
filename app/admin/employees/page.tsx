@@ -211,7 +211,35 @@ export default function EmployeesPage() {
       {/* Таблица */}
       <Card>
         <CardHeader>
-          <CardTitle>Сотрудники ({employees.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Сотрудники ({employees.length})</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const container = document.getElementById('employees-table-container');
+                  if (container) {
+                    container.scrollLeft -= 200;
+                  }
+                }}
+              >
+                ← Влево
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const container = document.getElementById('employees-table-container');
+                  if (container) {
+                    container.scrollLeft += 200;
+                  }
+                }}
+              >
+                Вправо →
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -219,7 +247,7 @@ export default function EmployeesPage() {
               <p className="text-gray-500">Загрузка...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div id="employees-table-container" className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
